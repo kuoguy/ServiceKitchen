@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#80A4D0</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="colorSelected">#FFE5CC</color>
+    <color name="pressed_color">#FF4081</color>
+    <color name="default_color">#ffffff</color>
+    <color name="actionbar_color">#80A4D0</color>
+    <color name="colorOrderSection">#6683a6</color>
+    <color name="colorLineSection">#a5bfde</color>
+    <color name="colorItemSection">#cadaec</color>
+</resources>
