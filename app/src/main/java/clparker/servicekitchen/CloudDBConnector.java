@@ -33,7 +33,7 @@ public class CloudDBConnector {
         {
             for (int count = 0; count < orderList.size(); count++)
             {
-                String orderId=orderList.get(count).getId();
+                String orderId=orderList.get(count).getOrder_id();
                 try {
                     orderLinesList = mClient.getTable(Order_Line.class).where().field("order").eq(orderId)
                             .execute().get();
@@ -70,7 +70,7 @@ public class CloudDBConnector {
                             try
                             {
                                 foundRecipeLines = mClient.getTable(Recipe_Line.class).where().field("recipe_id").eq(recipeId).execute().get();
-                                Log.d("CloudDBConnector", "id: " + foundRecipeLines.get(countLines).getId() + " recipelineid: " + recipeId);
+                                Log.d("CloudDBConnector", "Recipe Line id: " + foundRecipeLines.get(countLines).getId() + " recipelineid: " + recipeId);
                                 foundRecipe.get(0).setLines(foundRecipeLines);
 
 
@@ -119,6 +119,115 @@ public class CloudDBConnector {
 
         return orderList;
     }
+
+    public ArrayList<Order> checkAndGetOrders(MobileServiceClient mClient, ArrayList<Order> currentOrders, int location)
+    {
+        boolean result=false;
+        ArrayList<Order> difference=new ArrayList<>();
+        List<Order> orderList=null;
+        try
+        {
+            orderList = mClient.getTable(Order.class).where().field("location").eq(location)
+                    .execute().get();
+        }
+        catch(Exception e)
+        {
+            Log.d("CloudDBConnector", "getOrders failed: "+e.getMessage());
+        }
+
+        if(orderList!=null)
+        {
+            if (orderList.size() > currentOrders.size())
+                result = true;
+        }
+
+        if(result) {
+            for (int count = currentOrders.size(); count < orderList.size(); count++) {
+                difference.add(orderList.get(count));
+            }
+
+            List<Order_Line> orderLinesList = null;
+            if (orderList != null) {
+                for (int count = 0; count < orderList.size(); count++) {
+                    String orderId = orderList.get(count).getOrder_id();
+                    try {
+                        orderLinesList = mClient.getTable(Order_Line.class).where().field("order").eq(orderId)
+                                .execute().get();
+
+                        orderList.get(count).setLines(orderLinesList);
+                        Log.d("CloudDBConnector", "id: " + orderList.get(count).getId());
+                    } catch (Exception e) {
+                        //orderLinesList=null;
+                        Log.d("CloudDBConnector", "getOrderLines failed: " + e.getMessage());
+                    }
+                    List<Recipe> foundRecipe = null;
+                    if (orderLinesList != null) {
+
+                        for (int countLines = 0; countLines < orderLinesList.size(); countLines++) {
+                            String recipeId = orderLinesList.get(countLines).getRecipe();
+                            Log.d("CloudDBConnector", "orderline id: " + orderLinesList.get(countLines).getId() + " recipeid: " + recipeId);
+                            try {
+
+                                foundRecipe = mClient.getTable(Recipe.class).where().field("recipe_id").eq(recipeId)
+                                        .execute().get();
+
+                                orderLinesList.get(countLines).setLine(foundRecipe.get(0));
+
+                            } catch (Exception e) {
+                                foundRecipe = null;
+                                Log.d("CloudDBConnector", "getRecipe for orderline failed: " + e.getMessage());
+                            }
+
+                            if (foundRecipe != null) {
+                                List<Recipe_Line> foundRecipeLines = null;
+                                try {
+                                    foundRecipeLines = mClient.getTable(Recipe_Line.class).where().field("recipe_id").eq(recipeId).execute().get();
+                                    Log.d("CloudDBConnector", "Recipe Line id: " + foundRecipeLines.get(countLines).getId() + " recipelineid: " + recipeId);
+                                    foundRecipe.get(0).setLines(foundRecipeLines);
+
+
+                                } catch (Exception e) {
+                                    foundRecipeLines = null;
+                                    Log.d("CloudDBConnector", "getRecipeLines for recipe failed: " + e.getMessage());
+                                }
+
+                                if (foundRecipeLines != null) {
+                                    List<Item> foundItem = null;
+                                    String itemId;
+                                    for (int lineCount = 0; lineCount < foundRecipeLines.size(); lineCount++) {
+                                        itemId = foundRecipeLines.get(lineCount).getItem_id();
+                                        try {
+                                            foundItem = mClient.getTable(Item.class).where().field("id").eq(itemId)
+                                                    .execute().get();
+                                            Log.d("CloudDBConnector", "item id: " + foundItem.get(0).getId() + " name: " + foundItem.get(0).getItemName());
+                                            foundRecipeLines.get(lineCount).setItem(foundItem.get(0));
+
+                                        } catch (Exception e) {
+                                            Log.d("CloudDBConnector", "getItems for recipeline failed: " + e.getMessage());
+                                        }
+                                    }
+
+                                }
+
+
+                            }
+
+                        }
+                    }
+
+
+                }
+
+            }
+        }
+
+
+        return difference;
+    }
+
+
+
+
 
 
     List<Category> getCategories(MobileServiceClient mClient)

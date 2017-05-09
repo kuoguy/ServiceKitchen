@@ -20,6 +20,26 @@ public class Order {
     private Calendar created;
     private String createdTime;
 
+    public boolean isOnscreen() {
+        return onscreen;
+    }
+
+    public void setOnscreen(boolean onscreen) {
+        this.onscreen = onscreen;
+    }
+
+    private boolean onscreen=false;
+
+    public String getOrder_id() {
+        return order_id;
+    }
+
+    public void setOrder_id(String order_id) {
+        this.order_id = order_id;
+    }
+
+    private String order_id;
+
     public void setId(String nId){id=nId;}
     public void setLocation(int nLocation){location=nLocation;}
     public void setTable(int nTable){table=nTable;}
@@ -28,6 +48,7 @@ public class Order {
     public int getTable(){return table;}
     public Calendar getCreated(){return created;}
     public String getCreatedTime(){return createdTime;}
+
 
     public void addLine(Order_Line nOrderLine){lines.add(nOrderLine);}
     public Order_Line getLine(int pos){return lines.get(pos);}

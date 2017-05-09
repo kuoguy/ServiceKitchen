@@ -50,8 +50,8 @@ public class OrderAdapter extends ArrayAdapter<Order> {
         String orderTimeString = "Age: ";
         Calendar tempCalendar = Calendar.getInstance();
         Long tempTime = tempCalendar.getTimeInMillis();
-        Long orderTime = Long.parseLong(itemObj.getCreatedTime());
-        tempTime=tempTime-orderTime;
+        //Long orderTime = Long.parseLong(itemObj.getCreatedTime()); //Required
+        //tempTime=tempTime-orderTime; //Required
         //tempTime=(tempTime/1000);
         //orderTimeString+=tempTime;
 

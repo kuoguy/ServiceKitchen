@@ -2,6 +2,8 @@ package clparker.servicekitchen;
 
 
 
+import android.util.Log;
+
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
 
 import java.util.ArrayList;
@@ -23,9 +25,9 @@ public class ObjectHandler {
     //Fetches all orders for this location and places in ordersArrayList
     public void fetchOrders(MobileServiceClient mClient, CloudDBConnector cloudDB)
     {
-        List<Order> orders=cloudDB.getOrders(mClient, 1);
+        List<Order> orders=cloudDB.getOrders(mClient, 0);
         orderArrayList.clear();
-
+        Log.d("CloudDBConnector", "Orders size: "+orders.size());
         if(orders!=null)
         {
             for (int count = 0; count < orders.size(); count++) {
@@ -34,6 +36,25 @@ public class ObjectHandler {
             }
         }
 
+    }
+
+    public boolean fetchAndCheckOrders(MobileServiceClient mClient, CloudDBConnector cloudDB, ArrayList<Order> currentOrders)
+    {
+        ArrayList<Order> foundOrders = cloudDB.checkAndGetOrders(mClient, currentOrders, 0);
+        boolean result=false;
+
+        if(foundOrders.size()!=0)
+        {
+            result=true;
+            for(int count=0; count<foundOrders.size(); count++)
+            {
+
+                orderArrayList.add(foundOrders.get(count));
+                orderArrayList.get(count).setOnscreen(false);
+            }
+        }
+
+        return result;
     }
 
 
