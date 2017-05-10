@@ -20,6 +20,16 @@ public class Order {
     private Calendar created;
     private String createdTime;
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String status="New";
+
     public boolean isOnscreen() {
         return onscreen;
     }

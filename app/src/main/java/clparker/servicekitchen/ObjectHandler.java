@@ -38,7 +38,7 @@ public class ObjectHandler {
 
     }
 
-    public boolean fetchAndCheckOrders(MobileServiceClient mClient, CloudDBConnector cloudDB, ArrayList<Order> currentOrders)
+    public ArrayList<Order> fetchAndCheckOrders(MobileServiceClient mClient, CloudDBConnector cloudDB, ArrayList<Order> currentOrders)
     {
         ArrayList<Order> foundOrders = cloudDB.checkAndGetOrders(mClient, currentOrders, 0);
         boolean result=false;
@@ -54,7 +54,7 @@ public class ObjectHandler {
             }
         }
 
-        return result;
+        return foundOrders;
     }
 
 

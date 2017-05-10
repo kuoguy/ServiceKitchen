@@ -46,15 +46,15 @@ public class GridOrderAdapter extends BaseAdapter {
         TextView t3 = (TextView) view.findViewById(R.id.textViewTime);
 
         String nameString = Integer.toString(position);
-        String idString = itemObj.getOrder_id();
+        String idString = itemObj.getStatus();
         String timeString = itemObj.getCreatedTime();
 
         t1.setText(nameString);
         t1.setTextSize(14);
         t2.setText(idString);
-        t2.setTextSize(6);
+        t2.setTextSize(8);
         t3.setText(timeString);
-        t3.setTextSize(6);
+        t3.setTextSize(8);
 
         return view;
     }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.res.Resources;
 import android.media.Image;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
@@ -56,11 +58,14 @@ public class MainActivity extends AppCompatActivity {
     int ordersNumber=0;
 
     boolean update=true;
+    private ProgressBar spinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        spinner = (ProgressBar)findViewById(R.id.progressBar1);
 
         try {
             mClient = new MobileServiceClient(
@@ -81,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         GetOrders getOrders = new GetOrders();
+        spinner.setVisibility(View.VISIBLE);
         getOrders.execute(1);
 
 
@@ -98,11 +104,33 @@ public class MainActivity extends AppCompatActivity {
             else if(getResources().getResourceEntryName(parent.getId()).equals("linesListView"))
             {
                 selectionLine = position;
-                move(createScreenOrder());
+                //move(createScreenOrder());
+                setRecipeLinesAdapter();
+            }
+            else if(getResources().getResourceEntryName(parent.getId()).equals("ordersGridView"))
+            {
+                selection=position;
+                //currentOrder=position;
+                selectionLine = 0;
+                setLinesAdapter();
                 setRecipeLinesAdapter();
             }
         }
     };
+
+    public void completed(View v)
+    {
+        onscreenOrderArrayList.get(selection).setStatus("Completed");
+        SetOrders setOrders = new SetOrders();
+        setOrders.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, onscreenOrderArrayList.get(selection));
+    }
+
+    public void pending(View v)
+    {
+        onscreenOrderArrayList.get(selection).setStatus("Pending");
+        SetOrders setOrders = new SetOrders();
+        setOrders.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, onscreenOrderArrayList.get(selection));
+    }
 
     public void setRecipeLinesAdapter()
     {
@@ -173,6 +201,30 @@ public class MainActivity extends AppCompatActivity {
 
         iv.setScaleX(0.3f);
 
+        iv.setClickable(true);
+
+        if(ordersNumber==0)
+            iv.setId(R.id.layout1);
+        else if(ordersNumber==1)
+            iv.setId(R.id.layout2);
+        else if(ordersNumber==2)
+            iv.setId(R.id.layout3);
+        else if(ordersNumber==3)
+            iv.setId(R.id.layout4);
+        else if(ordersNumber==4)
+            iv.setId(R.id.layout5);
+        else if(ordersNumber==5)
+            iv.setId(R.id.layout6);
+        else if(ordersNumber==6)
+            iv.setId(R.id.layout7);
+        else if(ordersNumber==7)
+            iv.setId(R.id.layout8);
+        else if(ordersNumber==8)
+            iv.setId(R.id.layout9);
+        else if(ordersNumber==9)
+            iv.setId(R.id.layout10);
+
+
         // Create layout parameters for ImageView
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
@@ -204,6 +256,7 @@ public class MainActivity extends AppCompatActivity {
             if(!objectHandler.getOrderArrayList().get(count).isOnscreen())
             {
                 found=true;
+                Log.d("Animation", "Found new order");
             }
         }
 
@@ -216,7 +269,23 @@ public class MainActivity extends AppCompatActivity {
             image.startAnimation(translate1);
             ordersNumber++;
             BeginAnimation beginAnimation = new BeginAnimation();
-            beginAnimation.execute(translate1);
+            //beginAnimation.execute(translate1);
+            beginAnimation.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, translate1);
+        }
+
+    }
+
+    private class SetOrders extends AsyncTask<Order, Object, Boolean> {
+        @Override
+        protected Boolean doInBackground(Order... params)
+        {
+            cloudDB.changeOrderStatus(mClient, params[0]);
+            return true;
+        }
+        @Override
+        protected void onPostExecute(Boolean result)
+        {
+
         }
 
     }
@@ -273,7 +342,8 @@ public class MainActivity extends AppCompatActivity {
             else
             {
                 ManageCheckOrders manageCheckOrders = new ManageCheckOrders();
-                manageCheckOrders.execute(1);
+                //manageCheckOrders.execute(1);
+                manageCheckOrders.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 1);
             }
 
             //displayNewOrder();
@@ -293,6 +363,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(ArrayList<Order> result)
         {
             //orderArrayList=result;
+            spinner.setVisibility(View.GONE);
             setOrderGridAdapter();
             setLinesAdapter();
             setRecipeLinesAdapter();
@@ -313,16 +384,18 @@ public class MainActivity extends AppCompatActivity {
             {
                 try
                 {
-                    sleep(30000);
+                    sleep(20000);
                 }
                 catch(InterruptedException e)
                 {
                     Log.d("CheckingPoll", "Issue Sleeping"+e.getMessage());
                 }
 
-                if(objectHandler.fetchAndCheckOrders(mClient, cloudDB, objectHandler.getOrderArrayList()))
+                if(objectHandler.fetchAndCheckOrders(mClient, cloudDB, objectHandler.getOrderArrayList())!=null)
                 {
                     results=true;
+
+
                 }
 
             }
@@ -334,6 +407,7 @@ public class MainActivity extends AppCompatActivity {
         {
             //if(result.booleanValue())
             //{
+                //Log.d("SleepTest", "Result is true");
                 //setOrderGridAdapter();
                 //setLinesAdapter();
                 //setRecipeLinesAdapter();
@@ -341,13 +415,13 @@ public class MainActivity extends AppCompatActivity {
                 move(createScreenOrder());
             //}
             //else
-                //runAgain();
+                runAgain();
         }
     }
     public void runAgain()
     {
         ManageCheckOrders manageCheckOrders = new ManageCheckOrders();
-        manageCheckOrders.execute(1);
+        manageCheckOrders.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, 1);
     }
 
     /*

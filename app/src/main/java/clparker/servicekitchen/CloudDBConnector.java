@@ -27,12 +27,14 @@ public class CloudDBConnector {
         {
             Log.d("CloudDBConnector", "getOrders failed: "+e.getMessage());
         }
+
         //Now sets lines of order- fetches from cloud
         List<Order_Line> orderLinesList=null;
         if(orderList!=null)
         {
             for (int count = 0; count < orderList.size(); count++)
             {
+                orderList.get(count).setOnscreen(false);
                 String orderId=orderList.get(count).getOrder_id();
                 try {
                     orderLinesList = mClient.getTable(Order_Line.class).where().field("order").eq(orderId)
@@ -120,6 +122,19 @@ public class CloudDBConnector {
         return orderList;
     }
 
+    public void changeOrderStatus(MobileServiceClient mClient, Order order)
+    {
+        try {
+            mClient.getTable(Order.class).delete(order.getId());
+        }
+        catch(Exception e)
+        {
+        Log.d("CloudDBConnector", "setOrders failed: "+e.getMessage());
+        }
+
+        this.addOrder(mClient, order);
+    }
+
     public ArrayList<Order> checkAndGetOrders(MobileServiceClient mClient, ArrayList<Order> currentOrders, int location)
     {
         boolean result=false;
@@ -148,13 +163,13 @@ public class CloudDBConnector {
 
             List<Order_Line> orderLinesList = null;
             if (orderList != null) {
-                for (int count = 0; count < orderList.size(); count++) {
-                    String orderId = orderList.get(count).getOrder_id();
+                for (int count = 0; count < difference.size(); count++) {
+                    String orderId = difference.get(count).getOrder_id();
                     try {
                         orderLinesList = mClient.getTable(Order_Line.class).where().field("order").eq(orderId)
                                 .execute().get();
 
-                        orderList.get(count).setLines(orderLinesList);
+                        difference.get(count).setLines(orderLinesList);
                         Log.d("CloudDBConnector", "id: " + orderList.get(count).getId());
                     } catch (Exception e) {
                         //orderLinesList=null;
@@ -385,6 +400,8 @@ public class CloudDBConnector {
         orderObject.addProperty("location", Integer.toString(newOrder.getLocation()));
         orderObject.addProperty("table", Integer.toString(newOrder.getTable()));
         orderObject.addProperty("createdTime", newOrder.getCreatedTime());
+        orderObject.addProperty("status", newOrder.getStatus());
+        orderObject.addProperty("order_id", newOrder.getOrder_id());
 
         try
         {
